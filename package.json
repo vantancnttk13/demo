@@ -1,0 +1,21 @@
+{
+  "name": "electron-pos-printer-modern",
+  "version": "1.0.0",
+  "description": "Modern USB POS Printer for Electron",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder"
+  },
+  "dependencies": {
+    "electron": "^25.0.0",
+    "usb": "^2.9.0",
+    "node-hid": "^2.1.2",
+    "@serialport/parser-readline": "^12.0.0",
+    "serialport": "^12.0.0"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.0.0"
+  }
+}

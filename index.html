@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>USB POS Printer Test App</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .success {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+            box-shadow: 0 4px 15px rgba(81, 207, 102, 0.3);
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #cce7ff;
+            color: #004085;
+            border: 1px solid #b3d7ff;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .printer-info {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+
+        .log-output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            animation: fadeIn 0.5s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖨️ USB POS Printer Controller</h1>
+            <p>Test và control printer với full manual cut control</p>
+        </div>
+
+        <div class="content">
+            <!-- Connection Section -->
+            <div class="section">
+                <h3>🔌 Connection Management</h3>
+                <div class="button-group">
+                    <button onclick="findPrinters()" id="findBtn">Find USB Printers</button>
+                    <button onclick="connectPrinter()" id="connectBtn" disabled>Connect</button>
+                    <button onclick="disconnectPrinter()" id="disconnectBtn" disabled>Disconnect</button>
+                </div>
+                
+                <select id="printerSelect" disabled>
+                    <option value="">Select a printer...</option>
+                </select>
+                
+                <div id="connectionStatus" class="status info hidden">
+                    Ready to find printers
+                </div>
+                
+                <div id="printerInfo" class="printer-info hidden">
+                    <strong>Connected Printer:</strong>
+                    <div id="printerDetails"></div>
+                </div>
+            </div>
+
+            <!-- Printer Type Control -->
+            <div class="section">
+                <h3>⚙️ Printer Mode Control</h3>
+                <div class="button-group">
+                    <button onclick="setPrinterType('receipt')" id="receiptModeBtn" disabled>Receipt Mode</button>
+                    <button onclick="setPrinterType('label')" id="labelModeBtn" disabled>Label Mode</button>
+                </div>
+                <p><strong>Current Mode:</strong> <span id="currentMode">Not set</span></p>
+                <p><em>Receipt mode: Auto-cut disabled for manual control<br>
+                Label mode: No auto-cut, optimized for labels</em></p>
+            </div>
+
+            <!-- Quick Tests -->
+            <div class="section">
+                <h3>🧪 Quick Test Prints</h3>
+                <div class="button-group">
+                    <button onclick="testPrint('basic')" id="testBasicBtn" disabled>Basic Test</button>
+                    <button onclick="testPrint('receipt')" id="testReceiptBtn" disabled>Test Receipt (No Auto-Cut)</button>
+                    <button onclick="testPrint('label')" id="testLabelBtn" disabled>Test Label</button>
+                </div>
+                <p><em>All test prints will NOT auto-cut for testing purposes</em></p>
+            </div>
+
+            <!-- Manual Controls -->
+            <div class="section">
+                <h3>🎛️ Manual Paper Controls</h3>
+                <div class="button-group">
+                    <button onclick="feedPaper(1)" disabled class="feed-btn">Feed 1 Line</button>
+                    <button onclick="feedPaper(3)" disabled class="feed-btn">Feed 3 Lines</button>
+                    <button onclick="feedPaper(5)" disabled class="feed-btn">Feed 5 Lines</button>
+                </div>
+                <div class="button-group">
+                    <button onclick="cutPaper('full')" disabled class="cut-btn danger">Full Cut</button>
+                    <button onclick="cutPaper('partial')" disabled class="cut-btn danger">Partial Cut</button>
+                    <button onclick="cutPaper('feed-full')" disabled class="cut-btn danger">Feed + Full Cut</button>
+                </div>
+            </div>
+
+            <!-- Custom Print -->
+            <div class="grid">
+                <div class="card">
+                    <h3>📄 Custom Receipt</h3>
+                    <textarea id="receiptData" placeholder="JSON receipt data...">{
+  "header": {
+    "title": "MY COFFEE SHOP",
+    "address": "123 Coffee Street, Da Nang",
+    "phone": "0905-123-456",
+    "date": "21/09/2025 10:30"
+  },
+  "items": [
+    {"name": "Cappuccino", "quantity": 2, "price": "35,000", "total": "70,000"},
+    {"name": "Croissant", "quantity": 1, "price": "25,000", "total": "25,000"}
+  ],
+  "total": "95,000 VND",
+  "footer": "Cảm ơn quý khách!",
+  "qrCode": {
+    "data": "RECEIPT-2025092110300001",
+    "options": {"size": 3}
+  }
+}</textarea>
+                    <div class="button-group">
+                        <button onclick="printCustomReceipt(false)" disabled class="receipt-btn">Print (No Cut)</button>
+                        <button onclick="printCustomReceipt(true)" disabled class="receipt-btn danger">Print + Cut</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🏷️ Custom Label</h3>
+                    <textarea id="labelData" placeholder="JSON label data...">{
+  "title": "PRODUCT LABEL",
+  "content": [
+    {"text": "Cà phê Robusta", "bold": true, "fontSize": "double-width"},
+    {"text": "SKU: CF-ROB-001"},
+    {"text": "Giá: 150,000 VND", "alignment": "right", "bold": true},
+    {"text": "HSD: 12/2025", "alignment": "center"}
+  ],
+  "qrCode": {
+    "data": "CF-ROB-001-150000-122025",
+    "options": {"size": 4}
+  },
+  "border": true
+}</textarea>
+                    <div class="button-group">
+                        <button onclick="printCustomLabel(false)" disabled class="label-btn">Print (No Cut)</button>
+                        <button onclick="printCustomLabel(true)" disabled class="label-btn danger">Print + Cut</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Controls -->
+            <div class="section">
+                <h3>🔧 Advanced Controls</h3>
+                <div>
+                    <h4>Print Custom Text:</h4>
+                    <input type="text" id="customText" placeholder="Enter text to print..." value="Test custom text line">
+                    <select id="textAlignment">
+                        <option value="left">Left</option>
+                        <option value="center">Center</option>
+                        <option value="right">Right</option>
+                    </select>
+                    <select id="textSize">
+                        <option value="normal">Normal</option>
+                        <option value="double-height">Double Height</option>
+                        <option value="double-width">Double Width</option>
+                        <option value="double">Double Both</option>
+                    </select>
+                    <label><input type="checkbox" id="textBold"> Bold</label>
+                    <button onclick="printCustomText()" disabled id="printTextBtn">Print Text</button>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h4>Send Raw ESC/POS Command:</h4>
+                    <input type="text" id="rawCommand" placeholder="Enter raw command (e.g., \x1B@)" value="\x1B@\x1Bc5\x00Hello Raw!\x0A">
+                    <button onclick="sendRawCommand()" disabled id="rawBtn">Send Raw</button>
+                </div>
+            </div>
+
+            <!-- Log Output -->
+            <div class="section">
+                <h3>📋 Activity Log</h3>
+                <div id="logOutput" class="log-output">
+                    === USB POS Printer Controller Ready ===<br>
+                    Click "Find USB Printers" to start...<br>
+                </div>
+                <button onclick="clearLog()" class="danger" style="margin-top: 10px;">Clear Log</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
